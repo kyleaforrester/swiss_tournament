@@ -1,3 +1,4 @@
+use rand::seq::SliceRandom;
 use std::collections::HashSet;
 use std::io::{self, Read};
 
@@ -27,6 +28,7 @@ fn main() {
             name: csv_name.to_string(),
         });
     }
+    contestants.shuffle(&mut rand::thread_rng());
 
     for result in line_iter.filter(|x| x.len() > 0) {
         let csvs: Vec<&str> = result.split(',').collect();
