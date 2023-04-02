@@ -1,0 +1,11 @@
+Magnus Carlsen,Ian Nepomniatchi,Ding Liren,Alireza Firouzja,Hikaru Nakamura,Anish Giri,Fabiano Caruana,Wesley So,Viswanathan Anand,Teimour Radjabov,Levon Aronian
+
+Magnus Carlsen,D,Fabiano Caruana,D
+Ian Nepomniatchi,D,Anish Giri,D
+Ding Liren,W,Teimour Radjabov,L
+Alireza Firouzja,W,Viswanathan Anand,L
+Hikaru Nakamura,D,Wesley So,D
+Levon Aronian,BYE
+
+Ding Liren,W,Alireza Firouzja,L
+Magnus Carlsen,D,Hikaru Nakamura,D
