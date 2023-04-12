@@ -1,5 +1,5 @@
 use rand::seq::SliceRandom;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::io::{self, Read};
 
 #[derive(Clone)]
@@ -7,6 +7,7 @@ struct Contestant {
     wins: i32,
     draws: i32,
     losses: i32,
+    tiebreak: i32,
     history: HashSet<String>,
     name: String,
     enabled: bool,
@@ -25,6 +26,7 @@ fn main() {
             wins: 0,
             draws: 0,
             losses: 0,
+            tiebreak: 0,
             history: HashSet::new(),
             name: csv_name.to_string(),
             enabled: true,
@@ -162,6 +164,7 @@ fn main() {
         matchups.push((selected_con.name.to_string(), matched_con.name.to_string()));
     }
 
+    calculate_tiebreaks(&mut contestants);
     print_output(contestants, matchups, available_cons);
 }
 
@@ -174,6 +177,7 @@ fn execute_command(command: &str, contestants: &mut Vec<Contestant>) {
                 wins: char_data_iter.next().unwrap().parse().unwrap(),
                 draws: char_data_iter.next().unwrap().parse().unwrap(),
                 losses: char_data_iter.next().unwrap().parse().unwrap(),
+                tiebreak: 0,
                 history: HashSet::new(),
                 enabled: true,
             });
@@ -203,6 +207,17 @@ fn execute_command(command: &str, contestants: &mut Vec<Contestant>) {
     }
 }
 
+fn calculate_tiebreaks(contestants: &mut Vec<Contestant>) {
+    let score_map: HashMap<String, i32> = contestants
+        .iter()
+        .map(|x| (x.name.to_string(), 2 * x.wins + x.draws))
+        .collect();
+
+    for c in contestants.iter_mut() {
+        c.tiebreak = c.history.iter().map(|x| score_map[x]).sum();
+    }
+}
+
 fn print_output(
     mut contestants: Vec<Contestant>,
     matchups: Vec<(String, String)>,
@@ -221,8 +236,10 @@ fn print_output(
     print_results(&mut contestants, true);
     print_matchups(matchups, available_cons);
 
-    println!("<h2>Disabled Contestants</h2>");
-    print_results(&mut contestants, false);
+    if contestants.iter().any(|x| x.enabled == false) {
+        println!("<h2>Disabled Contestants</h2>");
+        print_results(&mut contestants, false);
+    }
 
     println!("  </body>\n</html>");
 }
@@ -238,6 +255,7 @@ fn print_results(contestants: &mut Vec<Contestant>, enabled: bool) {
           <th>Wins</th>
           <th>Draws</th>
           <th>Losses</th>
+          <th>Tiebreak</th>
         </tr>
       </thead>
       <tbody>"#
@@ -247,6 +265,7 @@ fn print_results(contestants: &mut Vec<Contestant>, enabled: bool) {
         (2 * b.wins + b.draws)
             .cmp(&(2 * a.wins + a.draws))
             .then_with(|| (a.wins + a.draws + a.losses).cmp(&(b.wins + b.draws + b.losses)))
+            .then_with(|| b.tiebreak.cmp(&a.tiebreak))
     });
     for c in contestants.iter().filter(|x| x.enabled == enabled) {
         println!(
@@ -257,13 +276,15 @@ fn print_results(contestants: &mut Vec<Contestant>, enabled: bool) {
           <td>{}</td>
           <td>{}</td>
           <td>{}</td>
+          <td>{:.2}</td>
         </tr>"#,
             c.name,
             ((2 * c.wins + c.draws) as f32) / 2.0,
             c.wins + c.draws + c.losses,
             c.wins,
             c.draws,
-            c.losses
+            c.losses,
+            (c.tiebreak as f32 / c.history.len() as f32) / 2.0
         );
     }
 
