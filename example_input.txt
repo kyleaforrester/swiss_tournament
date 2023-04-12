@@ -13,6 +13,10 @@ Magnus Carlsen,D,Hikaru Nakamura,D
 #disable Viswanathan Anand
 #add Garry Kasparov,0,0,1
 
+// This is a comment
+// We substituted Garry in for Anand for a single game
+// We then swapped them back out
+// Note how we modified their records as we enabled/disabled them
 Garry Kasparov,W,Teimour Radjabov,L
 
 #disable Garry Kasparov

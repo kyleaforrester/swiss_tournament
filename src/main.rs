@@ -32,7 +32,10 @@ fn main() {
     }
     contestants.shuffle(&mut rand::thread_rng());
 
-    for result in line_iter.filter(|x| x.len() > 0) {
+    for result in line_iter
+        .filter(|x| x.len() > 0)
+        .filter(|x| !x.starts_with("//"))
+    {
         if result.chars().nth(0).unwrap() == '#' {
             execute_command(result, &mut contestants);
             continue;
