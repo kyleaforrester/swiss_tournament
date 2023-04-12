@@ -9,3 +9,11 @@ Levon Aronian,BYE
 
 Ding Liren,W,Alireza Firouzja,L
 Magnus Carlsen,D,Hikaru Nakamura,D
+
+#disable Viswanathan Anand
+#add Garry Kasparov,0,0,1
+
+Garry Kasparov,W,Teimour Radjabov,L
+
+#disable Garry Kasparov
+#enable Viswanathan Anand,1,0,1

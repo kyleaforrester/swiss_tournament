@@ -9,6 +9,7 @@ struct Contestant {
     losses: i32,
     history: HashSet<String>,
     name: String,
+    enabled: bool,
 }
 
 fn main() {
@@ -26,11 +27,17 @@ fn main() {
             losses: 0,
             history: HashSet::new(),
             name: csv_name.to_string(),
+            enabled: true,
         });
     }
     contestants.shuffle(&mut rand::thread_rng());
 
     for result in line_iter.filter(|x| x.len() > 0) {
+        if result.chars().nth(0).unwrap() == '#' {
+            execute_command(result, &mut contestants);
+            continue;
+        }
+
         let csvs: Vec<&str> = result.split(',').collect();
 
         if csvs.len() == 4 {
@@ -79,7 +86,7 @@ fn main() {
     let mut matchups: Vec<(String, String)> = Vec::new();
     let mut available_cons: Vec<Contestant> = contestants
         .iter()
-        .filter(|x| x.wins + x.draws + x.losses == fewest_games)
+        .filter(|x| x.wins + x.draws + x.losses == fewest_games && x.enabled == true)
         .map(|x| x.clone())
         .collect();
 
@@ -138,8 +145,46 @@ fn main() {
     print_output(contestants, matchups, available_cons);
 }
 
+fn execute_command(command: &str, contestants: &mut Vec<Contestant>) {
+    match command.split(' ').nth(0).unwrap() {
+        "#add" => {
+            let mut char_data_iter = command.split_once(' ').unwrap().1.split(',');
+            contestants.push(Contestant {
+                name: char_data_iter.next().unwrap().to_string(),
+                wins: char_data_iter.next().unwrap().parse().unwrap(),
+                draws: char_data_iter.next().unwrap().parse().unwrap(),
+                losses: char_data_iter.next().unwrap().parse().unwrap(),
+                history: HashSet::new(),
+                enabled: true,
+            });
+        }
+        "#disable" => {
+            let name = command.split_once(' ').unwrap().1;
+            contestants
+                .iter_mut()
+                .find(|x| x.name == name)
+                .unwrap()
+                .enabled = false;
+        }
+        "#enable" => {
+            let mut char_data_iter = command.split_once(' ').unwrap().1.split(',');
+            let name = char_data_iter.next().unwrap();
+            let mut contestant = contestants
+                .iter_mut()
+                .filter(|x| x.enabled == false)
+                .find(|x| x.name == name)
+                .unwrap();
+            contestant.wins = char_data_iter.next().unwrap().parse().unwrap();
+            contestant.draws = char_data_iter.next().unwrap().parse().unwrap();
+            contestant.losses = char_data_iter.next().unwrap().parse().unwrap();
+            contestant.enabled = true;
+        }
+        _ => panic!("Unknown command: {}", command.split(' ').nth(0).unwrap()),
+    }
+}
+
 fn print_output(
-    contestants: Vec<Contestant>,
+    mut contestants: Vec<Contestant>,
     matchups: Vec<(String, String)>,
     available_cons: Vec<Contestant>,
 ) {
@@ -153,13 +198,16 @@ fn print_output(
     <h1>Swiss-System Tournament Results</h1>"#
     );
 
-    print_results(contestants);
+    print_results(&mut contestants, true);
     print_matchups(matchups, available_cons);
+
+    println!("<h2>Disabled Contestants</h2>");
+    print_results(&mut contestants, false);
 
     println!("  </body>\n</html>");
 }
 
-fn print_results(mut contestants: Vec<Contestant>) {
+fn print_results(contestants: &mut Vec<Contestant>, enabled: bool) {
     println!(
         r#"    <table>
       <thead>
@@ -180,7 +228,7 @@ fn print_results(mut contestants: Vec<Contestant>) {
             .cmp(&(2 * a.wins + a.draws))
             .then_with(|| (a.wins + a.draws + a.losses).cmp(&(b.wins + b.draws + b.losses)))
     });
-    for c in contestants.iter() {
+    for c in contestants.iter().filter(|x| x.enabled == enabled) {
         println!(
             r#"        <tr>
           <td>{}</td>
