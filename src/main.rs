@@ -10,6 +10,7 @@ struct Contestant {
     tiebreak: i32,
     history: HashSet<String>,
     name: String,
+    byes: i32,
     enabled: bool,
 }
 
@@ -29,6 +30,7 @@ fn main() {
             tiebreak: 0,
             history: HashSet::new(),
             name: csv_name.to_string(),
+            byes: 0,
             enabled: true,
         });
     }
@@ -78,6 +80,7 @@ fn main() {
                 .nth(0)
                 .unwrap();
             con.wins += 1;
+            con.byes += 1;
         }
     }
 
@@ -96,7 +99,8 @@ fn main() {
         .collect();
 
     while available_cons.len() > 1 {
-        // We will find a match pairing for the player with the least options amongst available contestants.
+        // We will find a match pairing for the player with the most amount of Byes.
+        // Ties will be broken with the least options amongst available contestants.
         // Ties will be broken by having the highest score.
         let a_cons_set = available_cons
             .iter()
@@ -106,35 +110,17 @@ fn main() {
             .iter()
             .enumerate()
             .min_by(|a, b| {
-                a_cons_set
-                    .difference(&a.1.history)
-                    .count()
-                    .cmp(&a_cons_set.difference(&b.1.history).count())
-                    .then_with(|| (2 * b.1.wins + b.1.draws).cmp(&(2 * a.1.wins + a.1.draws)))
+                b.1.byes.cmp(&(a.1.byes)).then_with(|| {
+                    a_cons_set
+                        .difference(&a.1.history)
+                        .count()
+                        .cmp(&a_cons_set.difference(&b.1.history).count())
+                        .then_with(|| (2 * b.1.wins + b.1.draws).cmp(&(2 * a.1.wins + a.1.draws)))
+                })
             })
             .unwrap()
             .0;
         let selected_con = available_cons.swap_remove(selected_con_index);
-
-        /*
-        println!("\nSearching for match for {}", selected_con.name);
-        println!("Matchups: {:?}", matchups);
-        println!(
-            "All Available: {:?}",
-            available_cons
-                .iter()
-                .map(|x| x.name.as_str())
-                .collect::<Vec<&str>>()
-        );
-        println!(
-            "New Available: {:?}",
-            available_cons
-                .iter()
-                .filter(|x| !selected_con.history.contains(&x.name))
-                .map(|x| x.name.as_str())
-                .collect::<Vec<&str>>()
-        );
-        */
 
         // Our match will be a player we have not played with the closest score to our own
         // Ties will be broken by having the least options amongst the available contestants.
@@ -179,6 +165,7 @@ fn execute_command(command: &str, contestants: &mut Vec<Contestant>) {
                 losses: char_data_iter.next().unwrap().parse().unwrap(),
                 tiebreak: 0,
                 history: HashSet::new(),
+                byes: 0,
                 enabled: true,
             });
         }
