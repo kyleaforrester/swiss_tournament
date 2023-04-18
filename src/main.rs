@@ -52,7 +52,7 @@ fn main() {
                 .iter_mut()
                 .filter(|x| x.name == csvs[0])
                 .nth(0)
-                .unwrap();
+                .expect(format!("Could not find contestant {}!", csvs[0]).as_str());
             match csvs[1] {
                 "W" => con.wins += 1,
                 "D" => con.draws += 1,
@@ -65,7 +65,7 @@ fn main() {
                 .iter_mut()
                 .filter(|x| x.name == csvs[2])
                 .nth(0)
-                .unwrap();
+                .expect(format!("Could not find contestant {}!", csvs[2]).as_str());
             match csvs[3] {
                 "W" => con.wins += 1,
                 "D" => con.draws += 1,
@@ -78,7 +78,7 @@ fn main() {
                 .iter_mut()
                 .filter(|x| x.name == csvs[0])
                 .nth(0)
-                .unwrap();
+                .expect(format!("Could not find contestant {}!", csvs[0]).as_str());
             con.wins += 1;
             con.byes += 1;
         }
@@ -143,7 +143,7 @@ fn main() {
                             .cmp(&(a_cons_set.difference(&b.1.history).count()))
                     })
             })
-            .unwrap()
+            .expect(format!("No matching contestant available for {}. Rerun the program or revise the tournament history.", selected_con.name).as_str())
             .0;
         let matched_con = available_cons.swap_remove(matched_con_index);
 
