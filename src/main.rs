@@ -271,7 +271,7 @@ fn print_results(contestants: &mut Vec<Contestant>, enabled: bool) {
             c.wins,
             c.draws,
             c.losses,
-            (c.tiebreak as f32 / c.history.len() as f32) / 2.0
+            (c.tiebreak as f32 / (c.wins + c.draws + c.losses) as f32) / 2.0
         );
     }
 
