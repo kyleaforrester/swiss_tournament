@@ -175,7 +175,7 @@ fn execute_command(command: &str, contestants: &mut Vec<Contestant>) {
             contestants
                 .iter_mut()
                 .find(|x| x.name == name)
-                .unwrap()
+                .expect(format!("No matching contestant available for {}. Rerun the program or revise the tournament history.", name).as_str())
                 .enabled = false;
         }
         "#enable" => {
