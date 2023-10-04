@@ -88,6 +88,7 @@ fn main() {
     // current round
     let fewest_games = contestants
         .iter()
+        .filter(|x| x.enabled == true)
         .map(|x| x.wins + x.draws + x.losses)
         .min()
         .unwrap();
